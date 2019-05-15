@@ -49,3 +49,15 @@ from spyder.widgets.comboboxes import (is_module_or_package,
                                        PythonModulesComboBox)
 from spyder.widgets.onecolumntree import OneColumnTree
 from spyder.plugins.variableexplorer.widgets.texteditor import TextEditor
+
+try:
+    _ = get_translation('coala', 'spyder_coala')
+except KeyError as error:
+    import gettext
+    _ = gettext.gettext
+
+locale_codec = QTextCodec.codecForLocale()
+COALA_REQVER = '>=0.11.0'
+COALA_VER = (subprocess.check_output(['coala', '--version']).decode('utf-8')).rstrip()
+dependencies.add("coala", _("Static code analysis"),
+                 required_version=COALA_REQVER, installed_version=COALA_VER)
