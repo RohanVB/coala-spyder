@@ -80,5 +80,5 @@ class UseCoala(object):
         return res
 
 
-# with open('/Users/rohan/.spyder-py3-dev/coala.results', 'wb') as fp:
-#     pickle.dump(UseCoala.output_to_diagnostics(), fp)
+with open('/Users/rohan/.spyder-py3-dev/coala.results', 'wb') as fp:
+    pickle.dump(UseCoala.output_to_diagnostics(), fp)
