@@ -35,7 +35,7 @@ class UseCoala(object):
         """
         Turn output to diagnostics.
         """
-        output = UseCoala.specific_file(None, 'run_coala.py')
+        output = UseCoala.specific_file(None, 'coalagui.py')
         if output is None:
             return None
         output_json = json.loads(output)['results']
@@ -43,7 +43,6 @@ class UseCoala(object):
         for key, problems in output_json.items():
             # section = key
             for problem in problems:
-                print(problem)
                 message = problem['message']
                 origin = problem['origin']
                 real_message = '[{}: {}]'.format(origin, message)
@@ -82,3 +81,6 @@ class UseCoala(object):
 
 with open('/Users/rohan/.spyder-py3-dev/coala.results', 'wb') as fp:
     pickle.dump(UseCoala.output_to_diagnostics(), fp)
+
+if __name__ == '__main__':
+    print(UseCoala.output_to_diagnostics())
