@@ -12,7 +12,6 @@ import json
 from coalib import coala
 import pickle
 
-
 class UseCoala(object):
 
     def log(*args, **kwargs):
@@ -45,7 +44,7 @@ class UseCoala(object):
             for problem in problems:
                 message = problem['message']
                 origin = problem['origin']
-                real_message = '[{}: {}]'.format(origin, message)
+                real_message = '{}: {}'.format(origin, message)
                 for code in problem['affected_code']:
                     filename = code['start']['file']
 
@@ -64,6 +63,7 @@ class UseCoala(object):
 
                     res.append({
                         'file_name': filename,
+                        'data': {
                         'range': {
                             'start': {
                                 'line': start_line,
@@ -75,12 +75,46 @@ class UseCoala(object):
                             }
                         },
                         'message': real_message  # contains origin and message
-                        })
-        return res
+                        }
+                    })
+                    result_list = [res[result_val]['file_name'] for result_val, val in enumerate(res)]
+                    message_list = [res[result_val]['data'] for result_val, val in enumerate(res)]
+                    final_list = list(zip(result_list, message_list))
+        return final_list, filename
+
+    def give_output():
+        x, y = UseCoala.output_to_diagnostics()
+        file_list = []
+        line_list = []
+        character_list = []
+        message_list = []
+        for i in x:
+            file_value = i[0]
+            line_value = i[1]['range']['start']['line']
+            message_value = i[1]['message']
+            character_value = i[1]['range']['start']['character']
+            line_list.append(line_value)
+            message_list.append(message_value)
+            character_list.append(character_value)
+            file_list.append(file_value)
+        zipped_list = list(zip(line_list, character_list, message_list))
+
+        # with_keys = []
+        # with_keys.append({
+        #     'C': zipped_list
+        # })
+
+        my_dict = {'C': zipped_list}
+
+        final_tuple = (y, my_dict)
+        return [final_tuple]
 
 
 with open('/Users/rohan/.spyder-py3-dev/coala.results', 'wb') as fp:
-    pickle.dump(UseCoala.output_to_diagnostics(), fp)
+    pickle.dump(UseCoala.give_output(), fp)
 
 if __name__ == '__main__':
-    print(UseCoala.output_to_diagnostics())
+    x = UseCoala.give_output()
+    # print(x)
+    print([(one, two) for one, two in x])
+
