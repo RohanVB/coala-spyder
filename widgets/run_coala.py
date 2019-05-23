@@ -98,12 +98,6 @@ class UseCoala(object):
             character_list.append(character_value)
             file_list.append(file_value)
         zipped_list = list(zip(line_list, character_list, message_list))
-
-        # with_keys = []
-        # with_keys.append({
-        #     'C': zipped_list
-        # })
-
         my_dict = {'C': zipped_list}
 
         final_tuple = (y, my_dict)
