@@ -109,6 +109,7 @@ with open('/Users/rohan/.spyder-py3-dev/coala.results', 'wb') as fp:
 
 if __name__ == '__main__':
     x = UseCoala.give_output()
-    # print(x)
-    print([(one, two) for one, two in x])
-
+    messages = ([two for one, two in x])
+    for i in messages:
+        dict_val = i
+    print(dict_val)
