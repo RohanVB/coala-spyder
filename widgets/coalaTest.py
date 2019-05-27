@@ -1,6 +1,8 @@
 import unittest
+import sys
+sys.path.append('..')
 # todo: import run_coala
-# from ..run_coala import UseCoala as coala
+from .. import run_coala as coala
 
 class TestOutput(unittest.TestCase):
     def test_start(self):

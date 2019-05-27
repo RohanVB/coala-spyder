@@ -94,56 +94,25 @@ class ResultsTree(OneColumnTree):
         self.results = results
         self.refresh()
 
+# todo: fix this
     def refresh(self):
         title = _('Results for ')+self.filename
         self.set_title(title)
         self.clear()
         self.data = {}
         # Populating tree
-        results = ((_('Convention'),
-                   ima.icon('convention'), self.results['C:']),)
-        for title, icon, messages in results:
-            title += ' (%d message%s)' % (len(messages),
-                                          's' if len(messages)>1 else '')
+        results = self.results
+        print(results)
+        for messages in results:
+            # title += ' (%s message%s)' % (messages,
+            #                               's' if len(messages)>1 else '')
             title_item = QTreeWidgetItem(self, [title], QTreeWidgetItem.Type)
-            title_item.setIcon(0, icon)
+            # title_item.setIcon(0, icon)
             if not messages:
                 title_item.setDisabled(True)
             modules = {}
-            for module, lineno, message, msg_id in messages:
-                basename = osp.splitext(osp.basename(self.filename))[0]
-                if not module.startswith(basename):
-                    # bug
-                    i_base = module.find(basename)
-                    module = module[i_base:]
-                dirname = osp.dirname(self.filename)
-                if module.startswith('.') or module == basename:
-                    modname = osp.join(dirname, module)
-                else:
-                    modname = osp.join(dirname, *module.split('.'))
-                if osp.isdir(modname):
-                    modname = osp.join(modname, '__init__')
-                for ext in ('.py', '.pyw'):
-                    if osp.isfile(modname+ext):
-                        modname = modname + ext
-                        break
-                if osp.isdir(self.filename):
-                    parent = modules.get(modname)
-                    if parent is None:
-                        item = QTreeWidgetItem(title_item, [module],
-                                               QTreeWidgetItem.Type)
-                        item.setIcon(0, ima.icon('python'))
-                        modules[modname] = item
-                        parent = item
-                else:
-                    parent = title_item
-                if len(msg_id) > 1:
-                    text = "[%s] %d : %s" % (msg_id, lineno, message)
-                else:
-                    text = "%d : %s" % (lineno, message)
-                msg_item = QTreeWidgetItem(parent, [text], QTreeWidgetItem.Type)
-                msg_item.setIcon(0, ima.icon('arrow'))
-                self.data[id(msg_item)] = (modname, lineno)
+            for message in messages:
+                text = "%s" % (message)
 
 
 class CoalaWidget(QWidget):
@@ -170,16 +139,6 @@ class CoalaWidget(QWidget):
             try:
                 data = pickle.loads(open(self.DATAPATH, 'rb').read())
                 self.rdata = data[:]
-                """
-                for key in self.rdata:
-                    print(key['file_name']) # file_name
-                    print(key['message']) # message
-                    print(key['range']['start']['line']) # start line 
-                    print(key['range']['end']['line']) # end line
-
-                """
-
-
             except (EOFError, ImportError):
                 print('error!!')
                 pass
@@ -255,6 +214,12 @@ class CoalaWidget(QWidget):
         self.filecombo.selected()
         if self.filecombo.is_valid():
             self.start()
+
+    def get_filename_and_data(self):
+        """
+        Used for test case
+        """
+        return [(filename, data) for filename, data in self.rdata]
 
     @Slot()
     def select_file(self):
@@ -344,39 +309,12 @@ class CoalaWidget(QWidget):
                 qba += self.process.readAllStandardError()
             else:
                 qba += self.process.readAllStandardOutput()
-        text = to_text_string( locale_codec.toUnicode(qba.data()) )
+        text = to_text_string(locale_codec.toUnicode(qba.data()))
         if error:
             self.error_output += text
         else:
             self.output += text
 
-    """
-        ************* Module gsoc.spyder.spyder.plugins.pylint.widgets.pylintgui
-    W0511: 56,2: : TODO: display results on 3 columns instead of 1: msg_id, lineno, message
-    C0304:480,0: : Final newline missing
-    E0611: 24,0: : No name 'QByteArray' in module 'qtpy.QtCore'
-    E0611: 24,0: : No name 'QProcess' in module 'qtpy.QtCore'
-    
-    """
-
-    """
-    [('/Users/rohan/Documents/gsoc/spyder/spyder/plugins/coala-spyder/widgets/coalagui.py', 
-    {'range': {'start': {'line': 1, 'character': 0}, 'end': {'line': 2, 'character': 0}}, 
-    'message': '[PEP8Bear: The code does not comply to PEP8.]'}), 
-    ('/Users/rohan/Documents/gsoc/spyder/spyder/plugins/coala-spyder/widgets/coalagui.py', 
-    {'range': {'start': {'line': 17, 'character': 0}, 'end': {'line': 18, 'character': 0}},
-    'message': '[PEP8Bear: The code does not comply to PEP8.]'}), 
-    ('/Users/rohan/Documents/gsoc/spyder/spyder/plugins/coala-spyder/widgets/coalagui.py', 
-    {'range': {'start': {'line': 39, 'character': 0}, 'end': {'line': 40, 'character': 0}}, 
-    'message': '[PEP8Bear: The code does not comply to PEP8.]'}),
-    ('/Users/rohan/Documents/gsoc/spyder/spyder/plugins/coala-spyder/widgets/coalagui.py', 
-    {'range': {'start': {'line': 62, 'character': 0}, 'end': {'line': 63, 'character': 0}}, 
-    'message': '[PEP8Bear: The code does not comply to PEP8.]'}),
-    ('/Users/rohan/Documents/gsoc/spyder/spyder/plugins/coala-spyder/widgets/coalagui.py',
-    {'range': {'start': {'line': 103, 'character': 0}, 'end': {'line': 104, 'character': 0}}, 
-    'message': '[PEP8Bear: The code does not comply to PEP8.]'})
-    
-    """
     # todo: fix regex
     def finished(self, exit_code, exit_status):
         self.set_running_state(False)
@@ -385,19 +323,38 @@ class CoalaWidget(QWidget):
                 QMessageBox.critical(self, _("Error"), self.error_output)
                 print("coala error:\n\n" + self.error_output, file=sys.stderr)
             return
-        results = []
+
+
+        # Convention, Refactor, Warning, Error
+        results = {'C:': [], 'R:': [], 'W:': [], 'E:': []}
+        txt_module = '************* Module '
+
+        module = ''  # Should not be needed - just in case something goes wrong
         for line in self.output.splitlines():
-            print(line)
-            if not re.match(r'\bmessage\b', line):
+            if line.startswith(txt_module):
+                # New module
+                module = line[len(txt_module):]
+                continue
+            # Supporting option include-ids: ('R3873:' instead of 'R:')
+            if not re.match(r'^(\w):', line):
                 continue
             i1 = line.find(':')
-            if i1 == -1:
+            if i1 == -1:  # if no colon found after regex match, continue to next line
                 continue
-            # msg_id = line[:]
-            message = line[:]
-            item = message
-            results.append(item)
+            msg_id = line[:i1]  # message_id is everything leading upto the colon (CO326:)
+            i2 = line.find(':', i1 + 1)
+            if i2 == -1:
+                continue
+            line_nb = line[i1 + 1:i2].strip() # line number is a number like 42 in 6,42
+            if not line_nb:
+                continue
+            line_nb = int(line_nb.split(',')[0])
+            message = line[i2 + 1:] # message is everything after the line number
+            item = (module, line_nb, message, msg_id)
+            results[line[0] + ':'].append(item)
 
+        filename = to_text_string(self.filecombo.currentText())
+        self.set_data(filename, results)
         self.output = self.error_output + self.output
         self.show_data(justanalyzed=True)
 
@@ -418,8 +375,11 @@ class CoalaWidget(QWidget):
             return
 
         _index, data = self.get_data(filename)
+        results = data
         if data is None:
             self.treewidget.clear_results()
+        else:
+            self.treewidget.set_results(filename, results)
 
 def test():
     """Run coala widget test"""
