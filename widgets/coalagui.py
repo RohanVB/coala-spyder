@@ -102,17 +102,15 @@ class ResultsTree(OneColumnTree):
         self.data = {}
         # Populating tree
         results = self.results
-        print(results)
-        for messages in results:
-            # title += ' (%s message%s)' % (messages,
-            #                               's' if len(messages)>1 else '')
-            title_item = QTreeWidgetItem(self, [title], QTreeWidgetItem.Type)
-            # title_item.setIcon(0, icon)
+        for messages in results['C']:
+            for message in messages:
+                print(type(message))
+                new_item = ' (%s %s)' % (message, '' if len(messages)>1 else '')
+                title_item = QTreeWidgetItem(self, [new_item], QTreeWidgetItem.Type)
             if not messages:
                 title_item.setDisabled(True)
-            modules = {}
-            for message in messages:
-                text = "%s" % (message)
+            # for message in messages:
+            #     text = "%s" % (message)
 
 
 class CoalaWidget(QWidget):
