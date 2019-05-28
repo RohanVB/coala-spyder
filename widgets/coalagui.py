@@ -5,6 +5,7 @@ import re
 import sys
 import time
 import subprocess
+import ast
 
 """
 Third Party Imports
@@ -101,14 +102,13 @@ class ResultsTree(OneColumnTree):
         self.clear()
         self.data = {}
         # Populating tree
-        results = self.results
-        for messages in results['C']:
-            for message in messages:
-                print(type(message))
-                new_item = ' (%s %s)' % (message, '' if len(messages)>1 else '')
-                title_item = QTreeWidgetItem(self, [new_item], QTreeWidgetItem.Type)
-            if not messages:
-                title_item.setDisabled(True)
+        # results = self.results
+        # for messages in results['C']:
+        #     for message in messages:
+        #         new_item = ' (%s %s)' % (message, '' if len(messages)>1 else '')
+        #         title_item = QTreeWidgetItem(self, [new_item], QTreeWidgetItem.Type)
+        #     if not messages:
+        #         title_item.setDisabled(True)
             # for message in messages:
             #     text = "%s" % (message)
 
@@ -140,7 +140,6 @@ class CoalaWidget(QWidget):
             except (EOFError, ImportError):
                 print('error!!')
                 pass
-
         self.filecombo = PythonModulesComboBox(self)
 
         self.start_button = create_toolbutton(self, icon=ima.icon('run'),
@@ -213,12 +212,6 @@ class CoalaWidget(QWidget):
         if self.filecombo.is_valid():
             self.start()
 
-    def get_filename_and_data(self):
-        """
-        Used for test case
-        """
-        return [(filename, data) for filename, data in self.rdata]
-
     @Slot()
     def select_file(self):
         self.redirect_stdio.emit(False)
@@ -239,6 +232,7 @@ class CoalaWidget(QWidget):
 
     def get_data(self, filename):
         filename = osp.abspath(filename)
+        # print(self.rdata) # [('/Users/rohan/Documents/gsoc/spyder/spyder/plugins/coalaspyder/widgets/coalagui.py', {'C:': []})]
         for index, (fname, data) in enumerate(self.rdata):
             if fname == filename:
                 return index, data
@@ -313,7 +307,6 @@ class CoalaWidget(QWidget):
         else:
             self.output += text
 
-    # todo: fix regex
     def finished(self, exit_code, exit_status):
         self.set_running_state(False)
         if not self.output:
@@ -322,35 +315,41 @@ class CoalaWidget(QWidget):
                 print("coala error:\n\n" + self.error_output, file=sys.stderr)
             return
 
+        results = {'C:': []}
+        literal_dict = ast.literal_eval(self.output)
+        line_numbers = []
+        char_numbers = []
+        bear_values = []
+        msg_values = []
+        for line in literal_dict['C']:
+            for i in line:
+                line_num = re.compile('(.+)~')
+                val = line_num.findall(i)
+                for line_nb in val:
+                    if line_nb:
+                        line_numbers.append(line_nb)
+            for j in line:
+                char_num = re.compile('(.*);')
+                val = char_num.findall(j)
+                for char_nm in val:
+                    if char_nm:
+                        char_numbers.append(char_nm)
+            for k in line:
+                bear_val = re.compile('(.*):')
+                val = bear_val.findall(k)
+                for bear_val in val:
+                    if bear_val:
+                        bear_values.append(bear_val)
+            for m in line:
+                msg_val = re.compile(':(.*)')
+                val = msg_val.findall(m)
+                for msg_val in val:
+                    if msg_val:
+                        msg_values.append(msg_val)
 
-        # Convention, Refactor, Warning, Error
-        results = {'C:': [], 'R:': [], 'W:': [], 'E:': []}
-        txt_module = '************* Module '
-
-        module = ''  # Should not be needed - just in case something goes wrong
-        for line in self.output.splitlines():
-            if line.startswith(txt_module):
-                # New module
-                module = line[len(txt_module):]
-                continue
-            # Supporting option include-ids: ('R3873:' instead of 'R:')
-            if not re.match(r'^(\w):', line):
-                continue
-            i1 = line.find(':')
-            if i1 == -1:  # if no colon found after regex match, continue to next line
-                continue
-            msg_id = line[:i1]  # message_id is everything leading upto the colon (CO326:)
-            i2 = line.find(':', i1 + 1)
-            if i2 == -1:
-                continue
-            line_nb = line[i1 + 1:i2].strip() # line number is a number like 42 in 6,42
-            if not line_nb:
-                continue
-            line_nb = int(line_nb.split(',')[0])
-            message = line[i2 + 1:] # message is everything after the line number
-            item = (module, line_nb, message, msg_id)
-            results[line[0] + ':'].append(item)
-
+        item = list(zip(line_numbers, char_numbers, bear_values, msg_values))
+        for i in item:
+            results['C:'].append(i)
         filename = to_text_string(self.filecombo.currentText())
         self.set_data(filename, results)
         self.output = self.error_output + self.output
