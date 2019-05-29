@@ -82,9 +82,9 @@ class ResultsTree(OneColumnTree):
             fname, lineno = data
             self.sig_edit_goto.emit(fname, lineno, '')
 
-    def clicked(self, item):
-        """Click event"""
-        self.activated(item)
+    # def clicked(self, item):
+    #     """Click event"""
+    #     self.activated(item)
 
     def clear_results(self):
         self.clear()
@@ -97,20 +97,30 @@ class ResultsTree(OneColumnTree):
 
 # todo: fix this
     def refresh(self):
-        title = _('Results for ')+self.filename
+        title = _('Results for ') + self.filename
         self.set_title(title)
         self.clear()
         self.data = {}
-        # Populating tree
-        # results = self.results
-        # for messages in results['C']:
-        #     for message in messages:
-        #         new_item = ' (%s %s)' % (message, '' if len(messages)>1 else '')
-        #         title_item = QTreeWidgetItem(self, [new_item], QTreeWidgetItem.Type)
-        #     if not messages:
-        #         title_item.setDisabled(True)
-            # for message in messages:
-            #     text = "%s" % (message)
+        if 'C:' in self.results:
+            results = self.results
+            result_vals = (_('coala'), ima.icon('convention'), results)
+            title, icon, messages = result_vals
+            title += ' (%d message%s)' % (len(messages),
+                                          's' if len(messages) > 1 else '')
+            title_item = QTreeWidgetItem(self, [title], QTreeWidgetItem.Type)
+            if not messages:
+                title_item.setDisabled(True)
+            parent = title_item
+            for lineno, charno, bearval, msg in messages['C:']:
+                if lineno:
+                    text = "(%d %d) %s: %s" % (int(lineno), int(charno), bearval, msg)
+
+                else:
+                    text = "%d : %s" % (int(lineno), msg)
+                msg_item = QTreeWidgetItem(parent, [text], QTreeWidgetItem.Type)
+                msg_item.setIcon(0, ima.icon('arrow'))
+                self.data[id(msg_item)] = lineno
+
 
 
 class CoalaWidget(QWidget):
@@ -232,7 +242,6 @@ class CoalaWidget(QWidget):
 
     def get_data(self, filename):
         filename = osp.abspath(filename)
-        # print(self.rdata) # [('/Users/rohan/Documents/gsoc/spyder/spyder/plugins/coalaspyder/widgets/coalagui.py', {'C:': []})]
         for index, (fname, data) in enumerate(self.rdata):
             if fname == filename:
                 return index, data
@@ -372,10 +381,10 @@ class CoalaWidget(QWidget):
             return
 
         _index, data = self.get_data(filename)
-        results = data
         if data is None:
             self.treewidget.clear_results()
         else:
+            results = data
             self.treewidget.set_results(filename, results)
 
 def test():
