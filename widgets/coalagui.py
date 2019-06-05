@@ -3,46 +3,19 @@ from __future__ import print_function, with_statement
 import os.path as osp
 import re
 import sys
-import time
 import subprocess
+import ast
 
-"""
-Third Party Imports
-getopenfilename: for selecting python files to run linter on
-QByteArray: used to store raw bytes
-QProcess: for reading output
-QTextCodec: used to retrieve text from bytes
-Signal and slot: signal emitted when an event occurs, slot is a function response to that signal
-QTWidgets: UI buttons, layout, etc,.
-"""
-# from coalib.coala import main as coala
 from qtpy.compat import getopenfilename
 from qtpy.QtCore import QByteArray, QProcess, QTextCodec, Signal, Slot
 from qtpy.QtWidgets import (QHBoxLayout, QLabel, QMessageBox, QTreeWidgetItem,
                             QVBoxLayout, QWidget)
 
-"""
-Local Imports
-
-dependencies: Checks for missing dependencies
-get_conf_path: gets path of results
-get_translation: used for testing as standalone script
-pickle: pickled format
-to_text_string: return text string
-to_unicode_from_fs: return unicode string from file system encoding
-create_toolbutton: creates QToolButton
-get_cwd_or_home: get_cwd() or if cwd() is deleted, gets home directory
-is_module_or_package: returns true if PATH is module or package
-PythonModulesComboBox: QComboBox?
-OneColumnTree: returns qtreewidget
-TextEditor: Actual text editor with a "save and close" button
-"""
 from run_coala import UseCoala as coala
 from spyder import dependencies
 from spyder.config.base import get_conf_path, get_translation
 from spyder.py3compat import pickle, to_text_string
 from spyder.utils import icon_manager as ima
-from spyder.utils.encoding import to_unicode_from_fs
 from spyder.utils.qthelpers import create_toolbutton
 from spyder.utils.misc import getcwd_or_home
 from spyder.widgets.comboboxes import (is_module_or_package,
@@ -64,6 +37,7 @@ COALA_VER = (subprocess.check_output(['coala', '--version']).decode('utf-8')).rs
 dependencies.add("coala", _("Static code analysis"),
                  required_version=COALA_REQVER, installed_version=COALA_VER)
 
+
 class ResultsTree(OneColumnTree):
     sig_edit_goto = Signal(str, int, str)
 
@@ -81,9 +55,9 @@ class ResultsTree(OneColumnTree):
             fname, lineno = data
             self.sig_edit_goto.emit(fname, lineno, '')
 
-    def clicked(self, item):
-        """Click event"""
-        self.activated(item)
+    # def clicked(self, item):
+    #     """Click event"""
+    #     self.activated(item)
 
     def clear_results(self):
         self.clear()
@@ -94,25 +68,31 @@ class ResultsTree(OneColumnTree):
         self.results = results
         self.refresh()
 
-# todo: fix this
     def refresh(self):
-        title = _('Results for ')+self.filename
+        title = _('Results for ') + self.filename
         self.set_title(title)
         self.clear()
         self.data = {}
-        # Populating tree
-        results = self.results
-        print(results)
-        for messages in results:
-            # title += ' (%s message%s)' % (messages,
-            #                               's' if len(messages)>1 else '')
+        if 'C:' in self.results:
+            results = self.results
+            result_vals = (_('coala'), ima.icon('convention'), results)
+            title, icon, messages = result_vals
+            title += ' (%d message%s)' % (len(messages),
+                                          's' if len(messages) > 1 else '')
             title_item = QTreeWidgetItem(self, [title], QTreeWidgetItem.Type)
-            # title_item.setIcon(0, icon)
             if not messages:
                 title_item.setDisabled(True)
-            modules = {}
-            for message in messages:
-                text = "%s" % (message)
+            parent = title_item
+            for lineno, charno, bearval, msg in messages['C:']:
+                if lineno:
+                    text = "(%d %d) %s: %s" % (int(lineno), int(charno), bearval, msg)
+
+                else:
+                    text = "%d : %s" % (int(lineno), msg)
+                msg_item = QTreeWidgetItem(parent, [text], QTreeWidgetItem.Type)
+                msg_item.setIcon(0, ima.icon('arrow'))
+                self.data[id(msg_item)] = lineno
+
 
 
 class CoalaWidget(QWidget):
@@ -142,7 +122,6 @@ class CoalaWidget(QWidget):
             except (EOFError, ImportError):
                 print('error!!')
                 pass
-
         self.filecombo = PythonModulesComboBox(self)
 
         self.start_button = create_toolbutton(self, icon=ima.icon('run'),
@@ -214,12 +193,6 @@ class CoalaWidget(QWidget):
         self.filecombo.selected()
         if self.filecombo.is_valid():
             self.start()
-
-    def get_filename_and_data(self):
-        """
-        Used for test case
-        """
-        return [(filename, data) for filename, data in self.rdata]
 
     @Slot()
     def select_file(self):
@@ -315,7 +288,6 @@ class CoalaWidget(QWidget):
         else:
             self.output += text
 
-    # todo: fix regex
     def finished(self, exit_code, exit_status):
         self.set_running_state(False)
         if not self.output:
@@ -324,35 +296,41 @@ class CoalaWidget(QWidget):
                 print("coala error:\n\n" + self.error_output, file=sys.stderr)
             return
 
+        results = {'C:': []}
+        literal_dict = ast.literal_eval(self.output)
+        line_numbers = []
+        char_numbers = []
+        bear_values = []
+        msg_values = []
+        for line in literal_dict['C']:
+            for i in line:
+                line_num = re.compile('(.+)~')
+                val = line_num.findall(i)
+                for line_nb in val:
+                    if line_nb:
+                        line_numbers.append(line_nb)
+            for j in line:
+                char_num = re.compile('(.*);')
+                val = char_num.findall(j)
+                for char_nm in val:
+                    if char_nm:
+                        char_numbers.append(char_nm)
+            for k in line:
+                bear_val = re.compile('(.*):')
+                val = bear_val.findall(k)
+                for bear_val in val:
+                    if bear_val:
+                        bear_values.append(bear_val)
+            for m in line:
+                msg_val = re.compile(':(.*)')
+                val = msg_val.findall(m)
+                for msg_val in val:
+                    if msg_val:
+                        msg_values.append(msg_val)
 
-        # Convention, Refactor, Warning, Error
-        results = {'C:': [], 'R:': [], 'W:': [], 'E:': []}
-        txt_module = '************* Module '
-
-        module = ''  # Should not be needed - just in case something goes wrong
-        for line in self.output.splitlines():
-            if line.startswith(txt_module):
-                # New module
-                module = line[len(txt_module):]
-                continue
-            # Supporting option include-ids: ('R3873:' instead of 'R:')
-            if not re.match(r'^(\w):', line):
-                continue
-            i1 = line.find(':')
-            if i1 == -1:  # if no colon found after regex match, continue to next line
-                continue
-            msg_id = line[:i1]  # message_id is everything leading upto the colon (CO326:)
-            i2 = line.find(':', i1 + 1)
-            if i2 == -1:
-                continue
-            line_nb = line[i1 + 1:i2].strip() # line number is a number like 42 in 6,42
-            if not line_nb:
-                continue
-            line_nb = int(line_nb.split(',')[0])
-            message = line[i2 + 1:] # message is everything after the line number
-            item = (module, line_nb, message, msg_id)
-            results[line[0] + ':'].append(item)
-
+        item = list(zip(line_numbers, char_numbers, bear_values, msg_values))
+        for i in item:
+            results['C:'].append(i)
         filename = to_text_string(self.filecombo.currentText())
         self.set_data(filename, results)
         self.output = self.error_output + self.output
@@ -375,11 +353,12 @@ class CoalaWidget(QWidget):
             return
 
         _index, data = self.get_data(filename)
-        results = data
         if data is None:
             self.treewidget.clear_results()
         else:
+            results = data
             self.treewidget.set_results(filename, results)
+
 
 def test():
     """Run coala widget test"""
@@ -390,6 +369,7 @@ def test():
     widget.show()
     widget.analyze(__file__)
     sys.exit(app.exec_())
+
 
 if __name__ == '__main__':
     test()
