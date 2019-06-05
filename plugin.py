@@ -63,7 +63,7 @@ class Coala(SpyderPluginWidget):
     # ------ SpyderPluginWidget API --------------------------------------------
     def get_plugin_title(self):
         """Return widget title"""
-        return _("Code Analysis")
+        return _("coala")
 
     def get_plugin_icon(self):
         """Return widget icon"""
