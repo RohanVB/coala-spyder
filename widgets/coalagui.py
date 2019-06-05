@@ -11,7 +11,7 @@ from qtpy.QtCore import QByteArray, QProcess, QTextCodec, Signal, Slot
 from qtpy.QtWidgets import (QHBoxLayout, QLabel, QMessageBox, QTreeWidgetItem,
                             QVBoxLayout, QWidget)
 
-from run_coala import UseCoala as coala
+from spyder.plugins.coalaspyder.widgets.run_coala import UseCoala as coala
 from spyder import dependencies
 from spyder.config.base import get_conf_path, get_translation
 from spyder.py3compat import pickle, to_text_string
