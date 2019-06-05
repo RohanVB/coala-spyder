@@ -303,6 +303,7 @@ class CoalaWidget(QWidget):
         bear_values = []
         msg_values = []
         for line in literal_dict['C']:
+            print(line)
             for i in line:
                 line_num = re.compile('(.+)~')
                 val = line_num.findall(i)
