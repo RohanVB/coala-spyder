@@ -20,7 +20,7 @@ from spyder.utils import icon_manager as ima
 from spyder.utils.programs import is_module_installed
 from spyder.utils.qthelpers import create_action, MENU_SEPARATOR
 
-# imports from pylint
+# imports from coala
 from spyder.plugins.coalaspyder.widgets.confpage import CoalaConfigPage
 from spyder.plugins.coalaspyder.widgets.coalagui import CoalaWidget
 
@@ -65,10 +65,10 @@ class Coala(SpyderPluginWidget):
         """Return widget title"""
         return _("Code Analysis")
 
-    # def get_plugin_icon(self):
-    #     """Return widget icon"""
-    #     path = osp.join(self.PLUGIN_PATH, self.IMG_PATH)
-    #     return ima.icon('coalaspyder', icon_path=path)
+    def get_plugin_icon(self):
+        """Return widget icon"""
+        path = osp.join(self.PLUGIN_PATH, self.IMG_PATH)
+        return ima.icon('coalaspyder', icon_path=path)
 
     def get_focus_widget(self):
         """
@@ -93,8 +93,8 @@ class Coala(SpyderPluginWidget):
             self.main.redirect_internalshell_stdio)
         self.main.add_dockwidget(self)
 
-        coala_act = create_action(self, _("Run static code analysis"),
-                                   triggered=self.run_pylint)
+        coala_act = create_action(self, _("Run coala"),
+                                   triggered=self.run_coala)
         coala_act.setEnabled(is_module_installed('coala'))
         self.register_shortcut(coala_act, context="Coala",
                                name="Run analysis")
@@ -103,7 +103,7 @@ class Coala(SpyderPluginWidget):
         self.main.editor.pythonfile_dependent_actions += [coala_act]
 
     def refresh_plugin(self):
-        """Refresh pylint widget"""
+        """Refresh coala widget"""
         self.coala.remove_obsolete_items()
 
     def closing_plugin(self, cancelable=False):
@@ -129,7 +129,7 @@ class Coala(SpyderPluginWidget):
 
     @Slot()
     def run_coala(self):
-        """Run pylint code analysis"""
+        """Run coala code analysis"""
         if (self.get_option('save_before', True)
                 and not self.main.editor.save()):
             return
