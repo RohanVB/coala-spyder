@@ -20,7 +20,7 @@ class UseCoala(object):
     def specific_file(working_dir, file):
         sys.argv = ['', '--json', '--find-config', '--limit-files', file]
         if working_dir is None:
-            working_dir = '.'
+            working_dir = '/Users/rohan/Documents/gsoc/spyder/spyder/plugins/coalaspyder/widgets'
         os.chdir(working_dir)
         f = io.StringIO()
         with redirect_stdout(f):
@@ -90,9 +90,9 @@ class UseCoala(object):
         message_list = []
         for i in x:
             file_value = i[0]
-            line_value = i[1]['range']['start']['line']
+            line_value = str(i[1]['range']['start']['line']) + '~'
             message_value = i[1]['message']
-            character_value = i[1]['range']['start']['character']
+            character_value = str(i[1]['range']['start']['character']) + ';'
             line_list.append(line_value)
             message_list.append(message_value)
             character_list.append(character_value)
