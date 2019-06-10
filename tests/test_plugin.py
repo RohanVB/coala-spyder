@@ -1,46 +1,38 @@
 """Tests for the plugin."""
-
-# Standard library imports
-import json
-import os
-import os.path as osp
-import shutil
-import tempfile
-
-# Third-party library imports
-from flaky import flaky
-import pytest
-import requests
-from qtpy.QtWebEngineWidgets import WEBENGINE
-from qtpy.QtCore import Qt, QTimer
-from qtpy.QtWidgets import QFileDialog, QApplication, QLineEdit
-from spyder.config.base import get_home_dir
+import sys
+import unittest
 
 # local imports
 
-from coalaspyder import plugin
+sys.path.append('/Users/rohan/Documents/gsoc/spyder/spyder/plugins')
+from coalaspyder.widgets.run_coala import UseCoala
+from coalaspyder.widgets.coalagui import CoalaWidget
 
 
-# =============================================================================
-# Fixtures
-# =============================================================================
-@pytest.fixture
-def notebook(qtbot):
-    """Set up the Notebook plugin."""
-    coala_plugin = plugin(None, testing=True)
-    qtbot.addWidget(coala_plugin)
-    coala_plugin.create_new_client()
-    coala_plugin.show()
-    return coala_plugin
+class TestRuncoala(unittest.TestCase):
 
-@pytest.fixture(scope='module')
-def tmpdir_under_home():
-    """Create a temporary directory under the home dir."""
-    tmpdir = tempfile.mkdtemp(dir=get_home_dir())
-    yield tmpdir
-    print('rmtree', tmpdir)
-    shutil.rmtree(tmpdir)
+    def setUp(self):
+        self.file_val = x.specific_file()
+        self.filename = x.output_to_diagnostics()
+        self.output = x.give_output()
+
+    def check_specific_file(self):
+        pass
+
+    def check_filename(self):
+        pass
+
+    def check_output_type(self):
+        self.assertIs(self.output, tuple)
 
 
-if __name__ == "__main__":
-    pytest.main()
+class Test(unittest.TestCase):
+
+    def setUp(self):
+        pass
+
+
+if __name__ == '__main__':
+    x = UseCoala
+    y = CoalaWidget
+    unittest.main()
