@@ -6,23 +6,24 @@ import unittest
 
 sys.path.append('/Users/rohan/Documents/gsoc/spyder/spyder/plugins')
 from coalaspyder.widgets.run_coala import UseCoala
-from coalaspyder.widgets.coalagui import CoalaWidget
+# from coalaspyder.widgets.coalagui import CoalaWidget
 
 
 class TestRuncoala(unittest.TestCase):
 
     def setUp(self):
-        self.file_val = x.specific_file()
+        x = UseCoala
+        self.file_val = x.specific_file('/Users/rohan/Documents/gsoc/spyder/spyder/plugins/coalaspyder/widgets', '*.py')
         self.filename = x.output_to_diagnostics()
         self.output = x.give_output()
 
-    def check_specific_file(self):
+    def test_specific_file(self):
         pass
 
-    def check_filename(self):
+    def test_filename(self):
         pass
 
-    def check_output_type(self):
+    def test_type(self):
         self.assertIs(self.output, tuple)
 
 
@@ -33,6 +34,4 @@ class Test(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    x = UseCoala
-    y = CoalaWidget
     unittest.main()
