@@ -1,0 +1,22 @@
+env:
+    global:
+        - PACKAGE="coalaspyder"
+
+matrix:
+    include:
+        - os: linux
+          language: python
+        - os: linux
+          language: python
+
+before_install:
+    - if [ "$TRAVIS_OS_NAME" == "linux"  ]; then
+            export DISPLAY=:99.0;
+            sh -e /etc/init.d/xvfb start;
+      fi
+
+install:
+    - sh travis.sh bootstrap
+
+script:
+    - sh travis.sh run_tests --coverage
