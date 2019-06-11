@@ -1,4 +1,4 @@
-"""Tests for the plugin."""
+"""Tests for run_coala.py ."""
 import sys
 import unittest
 
