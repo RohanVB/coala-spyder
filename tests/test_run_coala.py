@@ -3,16 +3,17 @@ import sys
 import unittest
 
 # local imports
-
-sys.path.append('/Users/rohan/Documents/gsoc/spyder/spyder/plugins')
-from coalaspyder.widgets.run_coala import UseCoala
+# todo: add general path to import for travis
+# sys.path.append('/Users/rohan/Documents/gsoc/spyder/spyder/plugins')
+sys.path.append('..')
+from widgets.run_coala import UseCoala
 
 
 class TestRuncoala(unittest.TestCase):
 
     def setUp(self):
         x = UseCoala
-        self.file_val = x.specific_file('/Users/rohan/Documents/gsoc/spyder/spyder/plugins/coalaspyder/widgets', '*.py')
+        self.file_val = x.specific_file('../widgets', '*.py')
         self.final_list, self.filename = x.output_to_diagnostics()
         self.output = x.give_output()
 
