@@ -3,7 +3,7 @@ python:
   - "3.7.1"
 
 before_install:
-  - pip install coalib
+  - pip install coala
   - cd tests
 
 # command to run tests
