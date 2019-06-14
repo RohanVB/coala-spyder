@@ -20,7 +20,7 @@ class UseCoala(object):
     def specific_file(working_dir, file):
         sys.argv = ['', '--json', '--find-config', '--limit-files', file]
         if working_dir is None:
-            working_dir = '/Users/rohan/Documents/gsoc/spyder/spyder/plugins/coalaspyder/widgets'
+            working_dir = '.'
         os.chdir(working_dir)
         f = io.StringIO()
         with redirect_stdout(f):
@@ -34,7 +34,7 @@ class UseCoala(object):
         """
         Turn output to diagnostics.
         """
-        output = UseCoala.specific_file(None, 'coalagui.py')
+        output = UseCoala.specific_file(None, '*.py')
         if output is None:
             return None
         output_json = json.loads(output)['results']
@@ -104,8 +104,8 @@ class UseCoala(object):
         return [final_tuple]
 
 
-with open('/Users/rohan/.spyder-py3-dev/coala.results', 'wb') as fp:
-    pickle.dump(UseCoala.give_output(), fp)
+# with open('/Users/rohan/.spyder-py3-dev/coala.results', 'wb') as fp:
+#     pickle.dump(UseCoala.give_output(), fp)
 
 if __name__ == '__main__':
     x = UseCoala.give_output()
