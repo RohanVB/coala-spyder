@@ -3,7 +3,7 @@ python:
   - "3.7.1"
 
 before_install:
-  - pip install coala
+  - pip install coala-bears
   - cd tests
 
 # command to run tests
