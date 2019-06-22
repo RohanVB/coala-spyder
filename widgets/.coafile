@@ -1,5 +1,5 @@
 [Default]
-files = *.py, coala_langserver/*.py, tests/**/*.py
+files = *.py
 
 max_line_length = 79
 use_spaces = True
@@ -32,16 +32,3 @@ enabled = False
 bears = LineCountBear
 max_lines_per_file = 1000
 
-[TODOS]
-enabled = False
-bears = KeywordBear
-language = python3
-
-# Note that the ci_keywords and cs_keywords are only used here because coala
-# 0.8.x (current stable release) needs them.
-ci_keywords, keywords = \#TODO, \# TODO, \#FIXME, \# FIXME
-cs_keywords =
-
-[yml]
-bears = YAMLLintBear
-files = *.yml
