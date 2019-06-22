@@ -8,7 +8,10 @@ before_install:
 
 # command to run tests
 script:
-  - coala --ci --save
   - pytest
+
+lint:
+  script:
+    - coala --ci
 
 cache: pip
