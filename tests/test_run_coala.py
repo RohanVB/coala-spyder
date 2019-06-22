@@ -1,12 +1,13 @@
-from widgets.run_coala import UseCoala
-'""Tests for run_coala.py .""'
 import sys
 import unittest
 
-# local imports
-# todo: add general path to import for travis
-# sys.path.append('/Users/rohan/Documents/gsoc/spyder/spyder/plugins')
 sys.path.append('..')
+
+from widgets.run_coala import UseCoala
+
+'""Tests for run_coala.py .""'
+
+# todo: add general path to import for travis
 
 
 class TestRuncoala(unittest.TestCase):
