@@ -3,7 +3,7 @@ import unittest
 
 sys.path.append('..')
 
-from widgets.run_coala import UseCoala
+from widgets.run_coala import UseCoala  # noqa
 
 '""Tests for run_coala.py .""'
 
