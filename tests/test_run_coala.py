@@ -7,8 +7,6 @@ from widgets.run_coala import UseCoala  # noqa
 
 '""Tests for run_coala.py .""'
 
-# todo: add general path to import for travis
-
 
 class TestRuncoala(unittest.TestCase):
 
